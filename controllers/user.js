@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
-const { BadRequestError } = require("../utils/badRequestError");
+const { BadRequestError } = require("../utils/BadRequestError");
 const { NotFoundError } = require("../utils/NotFoundError");
 const { ConflictError } = require("../utils/ConflictError");
 const { UnauthorizedError } = require("../utils/UnauthorizedError");
