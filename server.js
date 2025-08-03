@@ -1,39 +1,41 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const mongoose = require("mongoose");
 const cors = require("cors");
-
+const { NotFounError } = require("./utils/NotFoundError");
+const { createUser, login } = require("./controllers/user");
+const { getNews } = require("./controllers/news");
+const { validateUserBody, validateLogin } = require("./middleware/validation");
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const API_KEY = process.env.NEWS_API_KEY || "494e42497aaa4cd8ba25c47c7bdcb23f";
 
-app.use(cors());
+const corsOptions = {
+  origin: ["http://localhost:3000", "http://localhost:3001"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  alloheaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+mongoose.connect("mongodb://127.0.0.1:27017/newsApp_db");
+
+app.use(cors(corsOptions));
+
+app.use(express.json());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
+
   next();
 });
 app.get("/", (req, res) => {
   res.send("¡The backend is working!");
 });
 
-app.get("/news", async (req, res) => {
-  const { q = "bitcoin" } = req.query;
-
-  const url = `https://newsapi.org/v2/everything?q=${q}&apiKey=${API_KEY}&pageSize=100`;
-
-  try {
-    const response = await fetch(url);
-
-    const data = await response.json();
-
-    res.json(data);
-  } catch (err) {
-    console.error("Error fetching news:", err);
-    res.status(500).json({ error: "Error fetching news" });
-  }
-});
+app.post("/signup", validateUserBody, createUser);
+app.post("/signin", validateLogin, login);
+app.get("/news", getNews);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

@@ -24,3 +24,11 @@ dist-ssr
 *.sw?
 # Enviromental
 *.env
+
+# Dependency directory
+node_modules
+
+# Optional npm cache directory
+.npm
+
+
