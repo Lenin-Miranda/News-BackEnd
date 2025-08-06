@@ -12,6 +12,10 @@ module.exports.createUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
+    if (password.length < 6) {
+      throw new BadRequestError("Password must be at least 6 characters long");
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new ConflictError("User already exists");
@@ -29,12 +33,26 @@ module.exports.createUser = async (req, res, next) => {
     res.status(201).send(userToSend);
   } catch (err) {
     if (err.name === "ValidationError") {
-      next(new BadRequestError("Invalid data"));
+      return next(new BadRequestError("Invalid data"));
     } else if (err.code === 11000) {
-      next(new ConflictError("User already exists"));
+      return next(new ConflictError("User already exists"));
     } else {
-      next(err);
+      return next(err);
     }
+  }
+};
+
+module.exports.getCurrenUser = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return next(new NotFoundError("User not found"));
+    }
+    res.json(user);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -42,16 +60,20 @@ module.exports.login = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password) {
+      throw new BadRequestError("Email and password are required");
+    }
+
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      throw new UnauthorizedError("Incorrect email or password");
+      throw new UnauthorizedError("User not found");
     }
 
     const matched = await bcrypt.compare(password, user.password);
 
     if (!matched) {
-      throw new UnauthorizedError("Incorrect email or password");
+      throw new UnauthorizedError("Incorrect password");
     }
 
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
@@ -60,6 +82,7 @@ module.exports.login = async (req, res, next) => {
       token,
       email: user.email,
       name: user.name,
+      _id: user._id,
     });
   } catch (err) {
     if (err.name === "ValidationError") {

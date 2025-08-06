@@ -2,10 +2,11 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const { NotFounError } = require("./utils/NotFoundError");
-const { createUser, login } = require("./controllers/user");
-const { getNews } = require("./controllers/news");
-const { validateUserBody, validateLogin } = require("./middleware/validation");
+const routes = require("./routes"); // importa index.js automáticamente
+const errorHandler = require("./middleware/errorHandler");
+const rateLimiter = require("./middleware/rateLimiter");
+const { requestLogger, errorLogger } = require("./middleware/logger");
+const helmet = require("helmet");
 dotenv.config();
 
 const app = express();
@@ -14,29 +15,46 @@ const PORT = process.env.PORT || 3001;
 const corsOptions = {
   origin: ["http://localhost:3000", "http://localhost:3001"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  alloheaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization"], // ojo aquí: era "alloheaders" antes
   credentials: true,
 };
 
-mongoose.connect("mongodb://127.0.0.1:27017/newsApp_db");
+// Conexión MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("✅ connect to MongoDB"))
+  .catch((err) => console.error("❌ Erro connecting to MongoDB", err));
 
+// Middlewares
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+app.use(requestLogger);
 
-  next();
-});
+// Rutas
+app.use("/", routes); // Todas las rutas estarán centralizadas en /routes/index.js
+
+// Mensaje raíz
 app.get("/", (req, res) => {
   res.send("¡The backend is working!");
 });
 
-app.post("/signup", validateUserBody, createUser);
-app.post("/signin", validateLogin, login);
-app.get("/news", getNews);
+app.use(errorLogger);
 
+app.use(errorHandler);
+
+app.use(helmet());
+
+app.use(rateLimiter);
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(statusCode).json({ message });
+});
+
+// Arrancar servidor
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
