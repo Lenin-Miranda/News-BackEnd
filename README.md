@@ -85,3 +85,11 @@ This is a backend for a news application that allows users to register, log in, 
 ## Contributions
 
 Contributions are welcome! If you find an issue or have an improvement, please open an issue or submit a pull request.
+
+## Autores
+
+- [Lenin Miranda](https://github.com/Lenin-Miranda)
+
+## Deploy
+
+-[Live Demo](https://lenin-miranda.github.io/News-Explorer/)
