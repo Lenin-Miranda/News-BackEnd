@@ -25,7 +25,10 @@ const corsOptions = {
 
 // Conexión MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ connect to MongoDB"))
   .catch((err) => console.error("❌ Erro connecting to MongoDB", err));
 
