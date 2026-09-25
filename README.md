@@ -1,95 +1,48 @@
-# News Backend
+# News Explorer API
 
-This is a backend for a news application that allows users to register, log in, search for news, save news, and manage their saved news.
+Express/MongoDB backend for [News Explorer](https://github.com/Lenin-Miranda/News-Explorer). Provides account registration, JWT login, news search and saved-article management.
 
-## Features
+## Setup
 
-- **Authentication and Authorization**: User registration and login with JWT.
-- **User Management**: Create and retrieve current user information.
-- **News**:
-  - Search for news using the NewsAPI.
-  - Save personalized news for each user.
-  - Delete saved news.
-- **Validation**: Input data validation using `celebrate` and `Joi`.
-- **Security**: Use of `helmet`, CORS, and rate limiter to protect the API.
-- **Logging**: Request and error logging with `winston`.
+Requires Node.js, npm, MongoDB and a NewsAPI key.
 
-## Technologies Used
-
-- **Node.js** and **Express**: Main framework for the backend.
-- **MongoDB** and **Mongoose**: Database and data modeling.
-- **JWT**: For token-based authentication.
-- **NewsAPI**: To fetch real-time news.
-- **Winston**: For logging.
-- **Celebrate/Joi**: For data validation.
-
-## Installation
-
-1. Clone this repository:
-
-   ```bash
-   git clone <REPOSITORY_URL>
-   cd news-backend
-
-   ```
-
-2. Install dependiencies
-   npm install
-
-3. Create a .env file in the root of the project with the following variables:
-   PORT=3001
-   MONGODB_URI=<YOUR_MONGODB_URI>
-   JWT_SECRET=<YOUR_JWT_SECRET>
-   NEWS_API_KEY=<YOUR_NEWSAPI_KEY>
-
-4. Start the server in development mode:
-   npm run dev
-   The server will be running at http://localhost:3001.
-
-## Endpoints
-
-### **Authentication**
-
-- **POST**/**signup**: User registration.
-- **POST** /**signin**: User login.
-
-### **News**
-
-- **GET** /**news**: Search for real-time news.
-- **POST** /**news-saved:** Save a news article (requires authentication).
-- **GET** /**news-saved**: Retrieve saved news (requires authentication).
-- **DELETE** /**news-saved/:id**: Delete a saved news article (requires authentication).
-
-### **Users**
-
-- **GET** /**users**/**me**: Retrieve current user information (requires authentication).
-
-## Available Scripts
-
-- npm start: Start the server in production mode.
-- npm run dev: Start the server in development mode with nodemon.
-
-## Project Structure
-
-```
-.
-├── controllers/       # Route controllers
-├── middleware/        # Custom middlewares
-├── models/            # Mongoose models
-├── routes/            # Route definitions
-├── utils/             # Utilities and error classes
-├── server.js          # Server entry point
-└── .env               # Environment variables
+```bash
+git clone https://github.com/Lenin-Miranda/News-BackEnd.git
+cd News-BackEnd
+npm install
 ```
 
-## Contributions
+Create `.env` with your own credentials:
 
-Contributions are welcome! If you find an issue or have an improvement, please open an issue or submit a pull request.
+```dotenv
+PORT=3001
+MONGODB_URI=mongodb://127.0.0.1:27017/news_explorer
+JWT_SECRET=replace-with-a-generated-secret
+NEWS_API_KEY=your-newsapi-key
+```
 
-## Autores
+```bash
+npm run dev
+```
 
-- [Lenin Miranda](https://github.com/Lenin-Miranda)
+The API runs on `http://localhost:3001`. Use `npm start` to run without nodemon. No compilation step is needed.
 
-## Deploy
+## Routes
 
--[Live Demo](https://lenin-miranda.github.io/News-Explorer/)
+| Method | Route | Purpose |
+| --- | --- | --- |
+| POST | `/signup` | Register |
+| POST | `/signin` | Sign in |
+| GET | `/users/me` | Current user |
+| GET | `/news?q=keyword` | Search news |
+| GET | `/news-saved` | List saved articles |
+| POST | `/news-saved` | Save an article |
+| DELETE | `/news-saved/:id` | Remove a saved article |
+
+Authenticated routes use the JWT returned at login. Consult [routes/](routes/) and [controllers/](controllers/) for request validation and payloads.
+
+## Structure and verification
+
+[server.js](server.js) configures the server; `models/` holds MongoDB models and `utils/` contains shared configuration/helpers. The source also includes request/error logging and validation middleware.
+
+The `npm test` command is a placeholder that intentionally exits with an error. Verify registration, login, news search and saved-article operations using a local database and your own test account. News search requires a working external API key.
